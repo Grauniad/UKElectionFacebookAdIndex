@@ -35,10 +35,10 @@ namespace {
             parser.DeSerialize(std::move(encoder.Get<item>()), ad);
             uppers.fundingEntity = std::move(encoder.Get<upperFundingEntity>());
             uppers.pageName = std::move(encoder.Get<upperPageName>());
-            uppers.body = std::move(encoder.Get<upperBody>());
-            uppers.linkDescription = std::move(encoder.Get<upperDescription>());
-            uppers.linkTitle = std::move(encoder.Get<upperTitle>());
-            uppers.linkCaption = std::move(encoder.Get<upperCaption>());
+            uppers.bodies = std::move(encoder.Get<upperBodies>());
+            uppers.linkCaptions = std::move(encoder.Get<upperCaptions>());
+            uppers.linkTitles = std::move(encoder.Get<upperTitles>());
+            uppers.linkDescriptions = std::move(encoder.Get<upperDescriptions>());
         }
     }
 
@@ -46,14 +46,15 @@ namespace {
         using namespace StoredItem;
         thread_local FacebookAdParser parser;
         thread_local JSON encoder;
+        SimpleJSONBuilder builder;
         encoder.Clear();
         encoder.Get<item>() = parser.Serialize(ad.ItemRef());
-        encoder.Get<upperTitle>() = ad.CachedUppers().linkTitle;
-        encoder.Get<upperBody>() = ad.CachedUppers().body;
-        encoder.Get<upperDescription>() = ad.CachedUppers().linkDescription;
-        encoder.Get<upperCaption>() = ad.CachedUppers().linkCaption;
         encoder.Get<upperFundingEntity>() = ad.CachedUppers().fundingEntity;
         encoder.Get<upperPageName>() = ad.CachedUppers().pageName;
+        encoder.Get<upperBodies>() = ad.CachedUppers().bodies;
+        encoder.Get<upperTitles>() = ad.CachedUppers().linkTitles;
+        encoder.Get<upperDescriptions>() = ad.CachedUppers().linkDescriptions;
+        encoder.Get<upperCaptions>() = ad.CachedUppers().linkCaptions;
 
         return encoder.GetJSONString();
     }
@@ -64,10 +65,20 @@ StoredFacebookAd::StoredFacebookAd(std::shared_ptr<FacebookAd> ad)
     : item(std::move(ad))
 {
     key = CalculateKey(*item);
-    upperCase.linkTitle = ToUpper(item->linkTitle);
-    upperCase.body = ToUpper(item->body);
-    upperCase.linkDescription = ToUpper(item->linkDescription);
-    upperCase.linkCaption = ToUpper(item->linkCaption);
+
+    upperCase.bodies.reserve(item->bodies.size());
+    for (const std::string& body: item->bodies) {
+        upperCase.bodies.push_back(ToUpper(body));
+    }
+    for (const std::string& title: item->linkTitles) {
+        upperCase.linkTitles.push_back(ToUpper(title));
+    }
+    for (const std::string& caption: item->linkCaptions) {
+        upperCase.linkCaptions.push_back(ToUpper(caption));
+    }
+    for (const std::string& description: item->linkDescriptions) {
+        upperCase.linkDescriptions.push_back(ToUpper(description));
+    }
     upperCase.fundingEntity = ToUpper(item->fundingEntity);
     upperCase.pageName = ToUpper(item->pageName);
 }

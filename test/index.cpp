@@ -210,7 +210,7 @@ TEST_F(IndexMatchTest, DeSerialize_NoChangedCategories) {
 
 TEST_F(IndexMatchTest, MatchTitle) {
     Setter = [&] (std::string toSet, FacebookAd& ad) {
-        ad.linkTitle = std::move(toSet);
+        ad.linkTitles = { "Another", std::move(toSet), "Yet Another"};
     };
 
     DoWokingTest();
@@ -218,7 +218,7 @@ TEST_F(IndexMatchTest, MatchTitle) {
 
 TEST_F(IndexMatchTest, MatchBody) {
     Setter = [&] (std::string toSet, FacebookAd& ad) {
-        ad.body = std::move(toSet);
+        ad.bodies = { "Another", std::move(toSet), "Yet Another"};
     };
 
     DoWokingTest();
@@ -226,7 +226,7 @@ TEST_F(IndexMatchTest, MatchBody) {
 
 TEST_F(IndexMatchTest, MatchDesscription) {
     Setter = [&] (std::string toSet, FacebookAd& ad) {
-        ad.linkDescription = std::move(toSet);
+        ad.linkDescriptions = { "Another", std::move(toSet), "Yet Another"};
     };
 
     DoWokingTest();
@@ -234,7 +234,7 @@ TEST_F(IndexMatchTest, MatchDesscription) {
 
 TEST_F(IndexMatchTest, MatchCaption) {
     Setter = [&] (std::string toSet, FacebookAd& ad) {
-        ad.linkCaption = std::move(toSet);
+        ad.linkCaptions = { "Another", std::move(toSet), "Yet Another"};
     };
 
     DoWokingTest();

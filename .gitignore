@@ -47,3 +47,4 @@ FrontEnd/data
 clean.cfg
 purged.txt
 utils/PlaceData/IPN_GB_2019.csv
+js/node_modules

@@ -7,19 +7,19 @@
 
 namespace StoredItem {
     NewStringField(item);
-    NewStringField(upperTitle);
-    NewStringField(upperBody);
-    NewStringField(upperDescription);
-    NewStringField(upperCaption);
+    NewStringArrayField(upperTitles);
+    NewStringArrayField(upperDescriptions);
+    NewStringArrayField(upperCaptions);
+    NewStringArrayField(upperBodies);
     NewStringField(upperFundingEntity);
     NewStringField(upperPageName);
 
     using JSON = SimpleParsedJSON<
             item,
-            upperTitle,
-            upperBody,
-            upperDescription,
-            upperCaption,
+            upperTitles,
+            upperDescriptions,
+            upperCaptions,
+            upperBodies,
             upperFundingEntity,
             upperPageName>;
 };

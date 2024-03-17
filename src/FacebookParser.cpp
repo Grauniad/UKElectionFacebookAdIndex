@@ -79,7 +79,7 @@ namespace {
     }
 
     void ParseRegions(size_t adIndex, ParserData& parserData, FacebookAd& destination) {
-        auto& regionList = parserData.GetAdField<region_distribution>(adIndex);
+        auto& regionList = parserData .GetAdField<delivery_by_region>(adIndex);
         for (auto& reg: regionList) {
             RegionCode code = ParseRegionCode(reg->Get<data_fields::region>());
             std::string numericDist = reg->Get<data_fields::percentage>();
@@ -101,8 +101,13 @@ namespace {
         return maxId;
     }
 
-    struct InvalidId {
+    struct InvalidId{
         std::string id;
+
+    };
+
+    struct BadlyFormedData {
+        size_t id;
     };
 
     size_t ExtractId(const nstimestamp::Time& createTime, const std::string& url ) {
@@ -150,16 +155,15 @@ namespace {
     void ParseAd(size_t adIndex, vector<std::unique_ptr<FacebookAd>> &into, ParserData &parserData) {
         auto& ad = *into.emplace_back(std::make_unique<FacebookAd>());
         parserData.MoveField<ad_creation_time>(adIndex, ad.creationTime);
-        parserData.MoveField<ad_creative_body>(adIndex, ad.body);
-        parserData.MoveField<ad_creative_link_caption>(adIndex, ad.linkCaption);
-        parserData.MoveField<ad_creative_link_description>(adIndex, ad.linkDescription);
-        parserData.MoveField<ad_creative_link_title>(adIndex, ad.linkTitle);
+        parserData.MoveField<ad_creative_bodies>(adIndex, ad.bodies);
+        parserData.MoveField<ad_creative_link_captions>(adIndex, ad .linkCaptions);
+        parserData.MoveField<ad_creative_link_descriptions>(adIndex, ad .linkDescriptions);
+        parserData.MoveField<ad_creative_link_titles>(adIndex, ad.linkTitles);
         parserData.MoveField<ad_delivery_start_time>(adIndex, ad.deliveryStartTime);
         parserData.MoveField<ad_delivery_stop_time>(adIndex, ad.deliveryEndTime);
         parserData.MoveField<currency>(adIndex, ad.currency);
-        parserData.MoveField<funding_entity>(adIndex, ad.fundingEntity);
+        parserData.MoveField<bylines>(adIndex, ad.fundingEntity);
         parserData.MoveField<page_name>(adIndex, ad.pageName);
-
 
         if (parserData.AdFieldSupplied<id>(adIndex)) {
             parserData.MoveField<id>(adIndex, ad.id);
@@ -231,15 +235,15 @@ std::string FacebookAdParser::Serialize(const FacebookAd &ad) {
     auto& parserData = GetParser(*this->internalData);
     parserData.parser.Clear();
     auto& next = parserData.parser.Get<FacebookAdJSON::data>().emplace_back();
-    next->Get<ad_creative_link_title>() = ad.linkTitle;
-    next->Get<ad_creative_link_caption>() = ad.linkCaption;
-    next->Get<ad_creative_link_description>() = ad.linkDescription;
-    next->Get<ad_creative_body>() = ad.body;
+    next->Get<ad_creative_link_titles>() = ad.linkTitles;
+    next->Get<ad_creative_link_captions>() = ad.linkCaptions;
+    next->Get<ad_creative_link_descriptions>() = ad.linkDescriptions;
+    next->Get<ad_creative_bodies>() = ad.bodies;
     next->Get<ad_creation_time>() = ad.creationTime;
     next->Get<ad_delivery_start_time>() = ad.deliveryStartTime;
     next->Get<ad_delivery_stop_time>() = ad.deliveryEndTime;
     next->Get<page_name>() = ad.pageName;
-    next->Get<funding_entity>() = ad.fundingEntity;
+    next->Get<bylines>() = ad.fundingEntity;
     next->Get<id>() = ad.id;
 
     parserData.GetAdObjectField<impressions, data_fields::lower_bound>(0) = ToString(ad.impressions.lower_bound);
@@ -258,7 +262,7 @@ std::string FacebookAdParser::Serialize(const FacebookAd &ad) {
         dnext->Get<percentage>() = ToString(pair.second);
     }
 
-    auto& regions = next->Get<region_distribution>();
+    auto& regions = next->Get<delivery_by_region>();
     regions.reserve(ad.regionDist.size());
     for (const auto& pair: ad.regionDist) {
         auto& rnext = regions.emplace_back();

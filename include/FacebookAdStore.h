@@ -14,10 +14,10 @@ public:
     using KeyType = size_t;
 
     struct UpperStrings {
-        std::string linkTitle;
-        std::string body;
-        std::string linkDescription;
-        std::string linkCaption;
+        std::vector<std::string> bodies;
+        std::vector<std::string> linkTitles;
+        std::vector<std::string> linkDescriptions;
+        std::vector<std::string> linkCaptions;
         std::string fundingEntity;
         std::string pageName;
     };

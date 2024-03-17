@@ -17,20 +17,20 @@ public:
         ad.creationTime = nstimestamp::Time("2019-10-29T17:16:59+0000");
         ad.fundingEntity = "Entity#0";
         ad.pageName = "Page#0";
-        ad.linkTitle = "Title#0";
-        ad.linkCaption = "Caption#0";
-        ad.linkDescription = "Description#0";
-        ad.body = "Body#0";
+        ad.linkTitles = {"Title#0"};
+        ad.linkCaptions = {"Caption#0"};
+        ad.linkDescriptions = {"Description#0"};
+        ad.bodies = {"Body#0"};
 
         FacebookAd& ad1 = ads.emplace_back();
         ad1.id = 1;
         ad1.creationTime = nstimestamp::Time("2019-10-29T18:16:59+0000");
         ad1.fundingEntity = "Entity#1";
         ad1.pageName = "Page#1";
-        ad1.linkTitle = "Title#1";
-        ad1.linkCaption = "Caption#1";
-        ad1.linkDescription = "Description#1";
-        ad1.body = "Body#1";
+        ad1.linkTitles = {"Title#1"};
+        ad1.linkCaptions = {"Caption#1"};
+        ad1.linkDescriptions = {"Description#1"};
+        ad1.bodies = {"Body#1"};
     }
 protected:
     std::vector<FacebookAd> ads;
@@ -40,19 +40,24 @@ protected:
 TEST_F(TestFacebookStore, StoredUppers) {
     FacebookAd ad;
     ad.id = 0;
-    ad.body = "Body";
     ad.fundingEntity = "Funding Entity";
-    ad.linkDescription = "Link Description";
-    ad.linkTitle = "Link Title";
-    ad.linkCaption = "Link Caption";
+    ad.bodies = {"Body", "Another Body"};
+    ad.linkDescriptions = {"Link Description", "Another"};
+    ad.linkTitles = {"Link Title", "Another"};
+    ad.linkCaptions = {"Link Caption", "Another"};
     ad.pageName = "Page Name";
     StoredFacebookAd storedAd(std::make_unique<FacebookAd>(ad));
 
-    ASSERT_EQ(storedAd.CachedUppers().body, "BODY");
+    const std::vector<std::string> exp_bodies = {"BODY", "ANOTHER BODY"};
+    const std::vector<std::string> exp_captions = {"LINK CAPTION", "ANOTHER"};
+    const std::vector<std::string> exp_titles = {"LINK TITLE", "ANOTHER"};
+    const std::vector<std::string> exp_descriptions = {"LINK DESCRIPTION", "ANOTHER"};
+
     ASSERT_EQ(storedAd.CachedUppers().fundingEntity, "FUNDING ENTITY");
-    ASSERT_EQ(storedAd.CachedUppers().linkDescription, "LINK DESCRIPTION");
-    ASSERT_EQ(storedAd.CachedUppers().linkTitle, "LINK TITLE");
-    ASSERT_EQ(storedAd.CachedUppers().linkCaption, "LINK CAPTION");
+    ASSERT_EQ(storedAd.CachedUppers().bodies, exp_bodies);
+    ASSERT_EQ(storedAd.CachedUppers().linkTitles, exp_titles);
+    ASSERT_EQ(storedAd.CachedUppers().linkCaptions, exp_captions);
+    ASSERT_EQ(storedAd.CachedUppers().linkDescriptions, exp_descriptions);
     ASSERT_EQ(storedAd.CachedUppers().pageName, "PAGE NAME");
 }
 
@@ -79,23 +84,28 @@ TEST_F(TestFacebookStore, Serialization_StoredItem) {
 TEST_F(TestFacebookStore, Serialization_StoredUppers) {
     FacebookAd ad;
     ad.id = 0;
-    ad.body = "Body";
     ad.fundingEntity = "Funding Entity";
-    ad.linkDescription = "Link Description";
-    ad.linkTitle = "Link Title";
-    ad.linkCaption = "Link Caption";
+    ad.bodies = {"Body", "Another Body"};
+    ad.linkDescriptions = {"Link Description", "Another"};
+    ad.linkTitles = {"Link Title", "Another"};
+    ad.linkCaptions = {"Link Caption", "Another"};
     ad.pageName = "Page Name";
     StoredFacebookAd storedAd(std::make_unique<FacebookAd>(ad));
+
+    const std::vector<std::string> exp_bodies = {"BODY", "ANOTHER BODY"};
+    const std::vector<std::string> exp_captions = {"LINK CAPTION", "ANOTHER"};
+    const std::vector<std::string> exp_titles = {"LINK TITLE", "ANOTHER"};
+    const std::vector<std::string> exp_descriptions = {"LINK DESCRIPTION", "ANOTHER"};
 
     auto serialization = storedAd.Serialize();
     StoredFacebookAd copy(serialization);
 
-    ASSERT_EQ(copy.CachedUppers().body, "BODY");
     ASSERT_EQ(copy.CachedUppers().fundingEntity, "FUNDING ENTITY");
-    ASSERT_EQ(copy.CachedUppers().linkDescription, "LINK DESCRIPTION");
-    ASSERT_EQ(copy.CachedUppers().linkTitle, "LINK TITLE");
-    ASSERT_EQ(copy.CachedUppers().linkCaption, "LINK CAPTION");
     ASSERT_EQ(copy.CachedUppers().pageName, "PAGE NAME");
+    ASSERT_EQ(copy.CachedUppers().bodies, exp_bodies);
+    ASSERT_EQ(copy.CachedUppers().linkDescriptions, exp_descriptions);
+    ASSERT_EQ(copy.CachedUppers().linkTitles, exp_titles);
+    ASSERT_EQ(copy.CachedUppers().linkCaptions, exp_captions);
 }
 
 TEST_F(TestFacebookStore, NoSuchItem) {
