@@ -10,18 +10,38 @@ using namespace DbUtils;
 bool FacebookAdKey::HasKey(const StoredFacebookAd &item, const std::string &key) const {
     bool match = false;
     if (!item.IsNull()) {
-        if (Search(item.CachedUppers().linkTitle, key)) {
-            match = true;
-        } else if (Search(item.CachedUppers().fundingEntity, key)) {
+        if (Search(item.CachedUppers().fundingEntity, key)) {
             match = true;
         } else if (Search(item.CachedUppers().pageName, key )) {
-            match = true;
-        } else if (Search(item.CachedUppers().body, key )) {
-            match = true;
-        } else if (Search(item.CachedUppers().linkDescription, key )) {
-            match = true;
-        } else if (Search(item.CachedUppers().linkCaption, key)) {
-            match = true;
+        match = true;
+        } else {
+            for (size_t i = 0;
+                 !match && i < item.CachedUppers().linkDescriptions.size();
+                 ++i)
+            {
+                match = Search(item.CachedUppers().linkDescriptions[i], key);
+            }
+
+            for (size_t i = 0;
+                 !match && i < item.CachedUppers().linkCaptions.size();
+                 ++i)
+            {
+                match = Search(item.CachedUppers().linkCaptions[i], key);
+            }
+
+            for (size_t i = 0;
+                 !match && i < item.CachedUppers().linkTitles.size();
+                 ++i)
+            {
+                match = Search(item.CachedUppers().linkTitles[i], key);
+            }
+
+            for (size_t i = 0;
+                 !match && i < item.CachedUppers().bodies.size();
+                 ++i)
+            {
+                match = Search(item.CachedUppers().bodies[i], key);
+            }
         }
     }
     return match;

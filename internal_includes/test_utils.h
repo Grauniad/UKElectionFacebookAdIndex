@@ -34,9 +34,9 @@ void AssertEq(const FacebookAd& expected, const FacebookAd& actual) {
     ASSERT_EQ(expected.fundingEntity, actual.fundingEntity);
     ASSERT_EQ(expected.pageName, actual.pageName);
     ASSERT_EQ(expected.currency, actual.currency);
-    ASSERT_EQ(expected.linkTitle, actual.linkTitle);
-    ASSERT_EQ(expected.linkDescription, actual.linkDescription);
-    ASSERT_EQ(expected.body, actual.body);
+    ASSERT_EQ(expected.linkTitles, actual.linkTitles);
+    ASSERT_EQ(expected.linkDescriptions, actual.linkDescriptions);
+    ASSERT_EQ(expected.bodies, actual.bodies);
 
     ASSERT_EQ(expected.regionDist.size(), actual.regionDist.size());
     for (auto expIt = expected.regionDist.begin(), actualIt = actual.regionDist.begin();

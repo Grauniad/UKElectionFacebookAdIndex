@@ -4,23 +4,23 @@
 #include <SimpleJSON.h>
 namespace ReportJSON {
         NewStringField(ad_creation_time);
-        NewStringField(ad_creative_body);
-        NewStringField(ad_creative_link_caption);
-        NewStringField(ad_creative_link_description);
-        NewStringField(ad_creative_link_title);
-        NewStringField(ad_delivery_start_time);
         NewStringField(ad_delivery_end_time);
         NewStringField(funding_entity);
         NewUIntField(guestimateImpressions);
         NewUIntField(guestimateSpendGBP);
+        NewStringField(ad_delivery_start_time);
+        NewStringArrayField(ad_creative_bodies);
+        NewStringArrayField(ad_creative_link_captions);
+        NewStringArrayField(ad_creative_link_descriptions);
+        NewStringArrayField(ad_creative_link_titles);
 
     namespace data_fields {
         typedef SimpleParsedJSON<
+                ad_creative_link_captions,
+                ad_creative_bodies,
+                ad_creative_link_titles,
+                ad_creative_link_descriptions,
                 ad_creation_time,
-                ad_creative_body,
-                ad_creative_link_caption,
-                ad_creative_link_description,
-                ad_creative_link_title,
                 ad_delivery_start_time,
                 ad_delivery_end_time,
                 funding_entity,

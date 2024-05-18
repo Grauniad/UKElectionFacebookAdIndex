@@ -43,15 +43,16 @@ public:
     TDb()
        : theDb(dbConfig)
     {
+        // TODO: Multi coppy adds
         FacebookAd& ad = ads.emplace_back();
         ad.id = 0;
         ad.creationTime = nstimestamp::Time("2019-10-29T16:15:59+0000");
         ad.fundingEntity = "Entity#0";
         ad.pageName = "Page#0";
-        ad.linkTitle = "Title#0";
-        ad.linkCaption = "Caption#0";
-        ad.linkDescription = "Description#0";
-        ad.body = "Body#0";
+        ad.linkTitles = {"Title#0"};
+        ad.linkCaptions = {"Caption#0"};
+        ad.linkDescriptions = {"Description#0", "Description#1"};
+        ad.bodies = { "Body#0", "Body#1" };
 
         FacebookAd& ad1 = ads.emplace_back();
         ad1.id = 1;
@@ -59,10 +60,10 @@ public:
         ad1.deliveryEndTime = nstimestamp::Time("2020-10-29T18:18:60+0000");
         ad1.fundingEntity = "Entity#1";
         ad1.pageName = "Page#1";
-        ad1.linkTitle = "Title#1";
-        ad1.linkCaption = "Caption#1";
-        ad1.linkDescription = "Description#1";
-        ad1.body = "Body#1";
+        ad1.linkTitles = {"Title#1"};
+        ad1.linkCaptions = {"Caption#1", "Caption#0"};
+        ad1.linkDescriptions = {"Description#1"};
+        ad1.bodies = {"Body#1"};
 
         FacebookAd& ad2 = ads.emplace_back();
         ad2.id = 2;
@@ -71,10 +72,10 @@ public:
         ad2.deliveryEndTime = nstimestamp::Time("2020-10-29T18:18:60+0000");
         ad2.fundingEntity = "Entity#1";
         ad2.pageName = "Page#2";
-        ad2.linkTitle = "Title#2";
-        ad2.linkCaption = "Caption#2";
-        ad2.linkDescription = "Description#2";
-        ad2.body = "Brexit!";
+        ad2.linkTitles = {"Title#2", "Title#1"};
+        ad2.linkCaptions = {"Caption#2"};
+        ad2.linkDescriptions = {"Description#2"};
+        ad2.bodies = {"Brexit!"};
     }
 protected:
     void SetUp() {
@@ -353,14 +354,15 @@ TEST(DbUtilsTest, NoData) {
 }
 
 TEST(DbUtilsTest, WokingData) {
-    auto db = DbUtils::LoadDb("../test/data/cfg/woking.json", "../test/data/full_day_run");
+    auto db = DbUtils::LoadDb("../test/data/cfg/woking.json",
+                                               "../test/data/test_run");
 
     auto results = db->GetConstituency("Woking");
 
-    ASSERT_EQ(results.size(), 2);
+    ASSERT_EQ(results.size(), 4);
 
     const auto& libDemAd = *results[0];
-    const auto& conAd = *results[1];
+    const auto& conAd = *results[2];
 
     // Whilst sort order is LOCALE defined, if someone's system is so obtuse as to sort 2 before 1, they're
     // welcome to pull request a fix for this test only problem
@@ -369,7 +371,8 @@ TEST(DbUtilsTest, WokingData) {
 }
 
 TEST(DbUtilsTest, RestoreWokingData) {
-    auto oldDb = DbUtils::LoadDb("../test/data/cfg/woking.json", "../test/data/full_day_run");
+    auto oldDb = DbUtils::LoadDb("../test/data/cfg/woking.json",
+                                                  "../test/data/test_run");
 
     auto ad = std::make_unique<FacebookAd>();
     ad->id = 5;
@@ -379,35 +382,36 @@ TEST(DbUtilsTest, RestoreWokingData) {
 
     const auto DoCheck = [&] (AdDb& dbToTest, size_t libDemLower, size_t conLower) -> void {
         auto results = dbToTest.GetConstituency("Woking");
-        ASSERT_EQ(results.size(), 3);
+        ASSERT_EQ(results.size(), 5);
 
         const auto* libDemAd = results[0].get();
-        const auto* conAd = results[1].get();
-        const auto* testAd = results[2].get();
+        const auto* conAd = results[2].get();
+        const auto* testAd = results[4].get();
 
         // Whilst sort order is LOCALE defined, if someone's system is so obtuse as to sort 2 before 1, they're
         // welcome to pull request a fix for this test only problem
         ASSERT_EQ(libDemAd->fundingEntity, "Woking Liberal Democrats");
         ASSERT_EQ(libDemAd->impressions.lower_bound, libDemLower);
-        ASSERT_EQ(libDemAd->id, 1572697905);
+        ASSERT_EQ(libDemAd->id, 1428050904019116);
         ASSERT_EQ(conAd->fundingEntity, "Woking Conservative Association");
         ASSERT_EQ(conAd->impressions.lower_bound, conLower);
-        ASSERT_EQ(conAd->id, 1572614327);
+        ASSERT_EQ(conAd->id, 786125975166979);
         ASSERT_EQ(testAd->fundingEntity, "Woking Test Org");
         ASSERT_EQ(testAd->impressions.lower_bound, 123);
 
     };
-    ASSERT_NO_FATAL_FAILURE(DoCheck(*oldDb, 3000, 4000));
+    ASSERT_NO_FATAL_FAILURE(DoCheck(*oldDb, 9000, 10000));
 
     DbUtils::WriteDbToDisk(*oldDb, "tmp.json");
 
     auto db = DbUtils::LoadDb("../test/data/cfg/woking.json", "", "tmp.json");
 
-    ASSERT_NO_FATAL_FAILURE(DoCheck(*db, 3000, 4000));
+    ASSERT_NO_FATAL_FAILURE(DoCheck(*db, 9000, 10000));
 }
 
 TEST(DbUtilsTest, RestoreAndUpdateWokingData) {
-    auto oldDb = DbUtils::LoadDb("../test/data/cfg/woking.json", "../test/data/full_day_run");
+    auto oldDb = DbUtils::LoadDb("../test/data/cfg/woking.json",
+                                                  "../test/data/test_run");
 
     auto ad = std::make_unique<FacebookAd>();
     ad->id = 5;
@@ -417,35 +421,38 @@ TEST(DbUtilsTest, RestoreAndUpdateWokingData) {
 
     const auto DoCheck = [&] (AdDb& dbToTest, size_t libDemLower, size_t conLower) -> void {
         auto results = dbToTest.GetConstituency("Woking");
-        ASSERT_EQ(results.size(), 3);
+        ASSERT_EQ(results.size(), 5);
 
         const auto* libDemAd = results[0].get();
-        const auto* conAd = results[1].get();
-        const auto* testAd = results[2].get();
+        const auto* conAd = results[2].get();
+        const auto* testAd = results[4].get();
 
         // Whilst sort order is LOCALE defined, if someone's system is so obtuse as to sort 2 before 1, they're
         // welcome to pull request a fix for this test only problem
         ASSERT_EQ(libDemAd->fundingEntity, "Woking Liberal Democrats");
         ASSERT_EQ(libDemAd->impressions.lower_bound, libDemLower);
-        ASSERT_EQ(libDemAd->id, 1572697905);
+        ASSERT_EQ(libDemAd->id, 1428050904019116);
         ASSERT_EQ(conAd->fundingEntity, "Woking Conservative Association");
         ASSERT_EQ(conAd->impressions.lower_bound, conLower);
-        ASSERT_EQ(conAd->id, 1572614327);
+        ASSERT_EQ(conAd->id, 786125975166979);
         ASSERT_EQ(testAd->fundingEntity, "Woking Test Org");
         ASSERT_EQ(testAd->impressions.lower_bound, 123);
 
     };
-    ASSERT_NO_FATAL_FAILURE(DoCheck(*oldDb, 3000, 4000));
+    ASSERT_NO_FATAL_FAILURE(DoCheck(*oldDb, 9000, 10000));
 
     DbUtils::WriteDbToDisk(*oldDb, "tmp.json");
 
-    auto db = DbUtils::LoadDb("../test/data/cfg/woking.json", "../test/data/test_run", "tmp.json");
+    auto db = DbUtils::LoadDb("../test/data/cfg/woking.json",
+                                               "../test/data/test_run_updated",
+                                               "tmp.json");
 
-    ASSERT_NO_FATAL_FAILURE(DoCheck(*db, 3001, 4001));
+    ASSERT_NO_FATAL_FAILURE(DoCheck(*db, 9001, 10001));
 }
 
 TEST(DbUtilsTest, ConReport_Summary) {
-    auto db = DbUtils::LoadDb("../test/data/cfg/woking_beeston.json", "../test/data/full_day_run");
+    auto db = DbUtils::LoadDb("../test/data/cfg/woking_beeston.json",
+                                               "../test/data/test_run");
     auto report = Reports::DoConsituencyReport(*db);
 
     DbUtils::WriteReport(*report, ".");
@@ -480,7 +487,8 @@ TEST(DbUtilsTest, ConReport_Summary) {
 }
 
 TEST(DbUtilsTest, ConReport_NoAds) {
-    auto db = DbUtils::LoadDb("../test/data/cfg/woking_beeston.json", "../test/data/full_day_run");
+    auto db = DbUtils::LoadDb("../test/data/cfg/woking_beeston.json",
+                                               "../test/data/test_run");
     auto report = Reports::DoConsituencyReport(*db);
 
     DbUtils::WriteReport(*report, ".");
@@ -495,7 +503,8 @@ TEST(DbUtilsTest, ConReport_NoAds) {
 }
 
 TEST(DbUtilsTest, ConReport_Ads) {
-    auto db = DbUtils::LoadDb("../test/data/cfg/woking_beeston.json", "../test/data/full_day_run");
+    auto db = DbUtils::LoadDb("../test/data/cfg/woking_beeston.json",
+                                               "../test/data/test_run");
     auto report = Reports::DoConsituencyReport(*db);
     auto& reportWoking = (*report)["Woking"];
 
@@ -516,17 +525,19 @@ TEST(DbUtilsTest, ConReport_Ads) {
         ASSERT_EQ(fileAd.Get<ReportJSON::ad_delivery_start_time>(), ad.deliveryStartTime.ISO8601Timestamp());
         ASSERT_EQ(fileAd.Get<ReportJSON::ad_delivery_end_time>(), ad.deliveryEndTime.ISO8601Timestamp());
         ASSERT_EQ(fileAd.Get<ReportJSON::ad_creation_time>(), ad.creationTime.ISO8601Timestamp());
-        ASSERT_EQ(fileAd.Get<ReportJSON::ad_creative_link_description>(), ad.linkDescription);
-        ASSERT_EQ(fileAd.Get<ReportJSON::ad_creative_link_title>(), ad.linkTitle);
-        ASSERT_EQ(fileAd.Get<ReportJSON::ad_creative_link_caption>(), ad.linkCaption );
-        ASSERT_EQ(fileAd.Get<ReportJSON::ad_creative_body>(), ad.body );
         ASSERT_EQ(fileAd.Get<ReportJSON::guestimateSpendGBP>(), reportWoking.ads[i].guestimateSpend );
         ASSERT_EQ(fileAd.Get<ReportJSON::guestimateImpressions>(), reportWoking.ads[i].guestimateImpressions );
+
+        ASSERT_EQ(fileAd.Get<ReportJSON::ad_creative_link_descriptions>(), ad.linkDescriptions);
+        ASSERT_EQ(fileAd.Get<ReportJSON::ad_creative_link_titles>(), ad.linkTitles);
+        ASSERT_EQ(fileAd.Get<ReportJSON::ad_creative_link_captions>(), ad.linkCaptions );
+        ASSERT_EQ(fileAd.Get<ReportJSON::ad_creative_bodies>(), ad.bodies);
     }
 }
 
 TEST(DbUtilsTest, ConReport_Ads_RedactedMode) {
-    auto db = DbUtils::LoadDb("../test/data/cfg/woking_beeston.json", "../test/data/full_day_run");
+    auto db = DbUtils::LoadDb("../test/data/cfg/woking_beeston.json",
+                                               "../test/data/test_run");
     auto report = Reports::DoConsituencyReport(*db);
     auto& reportWoking = (*report)["Woking"];
 
@@ -547,10 +558,14 @@ TEST(DbUtilsTest, ConReport_Ads_RedactedMode) {
         ASSERT_EQ(fileAd.Get<ReportJSON::ad_delivery_start_time>(), ad.deliveryStartTime.ISO8601Timestamp());
         ASSERT_EQ(fileAd.Get<ReportJSON::ad_delivery_end_time>(), ad.deliveryEndTime.ISO8601Timestamp());
         ASSERT_EQ(fileAd.Get<ReportJSON::ad_creation_time>(), ad.creationTime.ISO8601Timestamp());
-        ASSERT_EQ(fileAd.Get<ReportJSON::ad_creative_link_description>(), DbUtils::REDACTED_TEXT);
-        ASSERT_EQ(fileAd.Get<ReportJSON::ad_creative_link_title>(), DbUtils::REDACTED_TEXT);
-        ASSERT_EQ(fileAd.Get<ReportJSON::ad_creative_link_caption>(), DbUtils::REDACTED_TEXT);
-        ASSERT_EQ(fileAd.Get<ReportJSON::ad_creative_body>(), DbUtils::REDACTED_TEXT);
+        ASSERT_EQ(fileAd.Get<ReportJSON::ad_creative_link_descriptions>().size(), 1);
+        ASSERT_EQ(fileAd.Get<ReportJSON::ad_creative_link_titles>().size(), 1);
+        ASSERT_EQ(fileAd.Get<ReportJSON::ad_creative_link_captions>().size(), 1);
+        ASSERT_EQ(fileAd.Get<ReportJSON::ad_creative_bodies>().size(), 1);
+        ASSERT_EQ(fileAd.Get<ReportJSON::ad_creative_link_descriptions>()[0], DbUtils::REDACTED_TEXT);
+        ASSERT_EQ(fileAd.Get<ReportJSON::ad_creative_link_titles>()[0], DbUtils::REDACTED_TEXT);
+        ASSERT_EQ(fileAd.Get<ReportJSON::ad_creative_link_captions>()[0], DbUtils::REDACTED_TEXT);
+        ASSERT_EQ(fileAd.Get<ReportJSON::ad_creative_bodies>()[0], DbUtils::REDACTED_TEXT);
         ASSERT_EQ(fileAd.Get<ReportJSON::guestimateSpendGBP>(), reportWoking.ads[i].guestimateSpend );
         ASSERT_EQ(fileAd.Get<ReportJSON::guestimateImpressions>(), reportWoking.ads[i].guestimateImpressions );
     }

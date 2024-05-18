@@ -192,16 +192,18 @@ void DbUtils::WriteReport(Reports::Report& report, const std::string &basePath, 
             adsBuilder.Add("ad_delivery_end_time", ad.ad->deliveryEndTime.ISO8601Timestamp());
             adsBuilder.Add("ad_creation_time", ad.ad->creationTime.ISO8601Timestamp());
             if (mode == WriteMode::REDACTED) {
-                const std::string redacted(REDACTED_TEXT);
-                adsBuilder.Add("ad_creative_link_description", redacted);
-                adsBuilder.Add("ad_creative_link_title", redacted);
-                adsBuilder.Add("ad_creative_link_caption", redacted);
-                adsBuilder.Add("ad_creative_body", redacted);
+                const std::vector<std::string> redacted{REDACTED_TEXT};
+                adsBuilder.Add("ad_creative_link_descriptions", redacted);
+                adsBuilder.Add("ad_creative_link_titles", redacted);
+                adsBuilder.Add("ad_creative_link_captions", redacted);
+                adsBuilder.Add("ad_creative_bodies", redacted);
             } else {
-                adsBuilder.Add("ad_creative_link_description", ad.ad->linkDescription);
-                adsBuilder.Add("ad_creative_link_title", ad.ad->linkTitle);
-                adsBuilder.Add("ad_creative_link_caption", ad.ad->linkCaption);
-                adsBuilder.Add("ad_creative_body", ad.ad->body);
+                adsBuilder.Add("ad_creative_bodies", ad.ad->bodies);
+                adsBuilder.Add("ad_creative_link_descriptions",
+                                ad.ad->linkDescriptions);
+                adsBuilder.Add("ad_creative_link_titles", ad.ad->linkTitles);
+                adsBuilder.Add("ad_creative_link_captions", ad
+                .ad->linkCaptions);
             }
             adsBuilder.Add("guestimateImpressions", ad.guestimateImpressions);
             adsBuilder.Add("guestimateSpendGBP", ad.guestimateSpend);

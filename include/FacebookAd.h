@@ -3,11 +3,12 @@
 
 #include <string>
 #include <map>
+#include <vector>
 #include <util_time.h>
 
 struct BoundedQuantity {
-    size_t lower_bound;
-    size_t upper_bound;
+    size_t lower_bound = 0;
+    size_t upper_bound = 0;
 };
 
 enum class RegionCode {
@@ -74,13 +75,14 @@ struct  FacebookAd {
     std::string pageName;
 
     std::string currency;
-    std::string linkTitle;
-    std::string linkDescription;
-    std::string linkCaption;
-    std::string body;
+    std::vector<std::string> linkTitles;
+    std::vector<std::string> linkDescriptions;
+    std::vector<std::string> linkCaptions;
+    std::vector<std::string> bodies;
 
     std::map<RegionCode, double> regionDist;
     std::map<Demographic, double> demographicDist;
+
 };
 
 #endif
