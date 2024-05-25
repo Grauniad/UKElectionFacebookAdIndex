@@ -1,6 +1,6 @@
 function GetDataUrl(indexKey) {
-    return "https://raw.githubusercontent.com/LAHumphreys/UKElectionFacebookAdIndex/master/docs/FrontEnd/data/"  + GetDataSet() + "/" + indexKey + ".json";
-    //return "data/" + GetDataSet() + "/" + indexKey + ".json";
+    //return "https://raw.githubusercontent.com/LAHumphreys/UKElectionFacebookAdIndex/master/docs/FrontEnd/data/"  + GetDataSet() + "/" + indexKey + ".json";
+    return "data/" + GetDataSet() + "/" + indexKey + ".json";
 }
 function ClearTable(table) {
     if ($.fn.dataTable.isDataTable(table)) {
@@ -44,7 +44,7 @@ function ConsolidateData(table, groupField, keys, cb) {
         $.ajax({
             url: ref
         }).done(function (d) {
-            JSON.parse(d).data.forEach(function (ad, index) {
+            d.data.forEach(function (ad, index) {
                 let groupKey = ad[groupField];
                 if (!(groupKey in result)) {
                     result[groupKey] = {
@@ -70,11 +70,18 @@ function ConsolidateData(table, groupField, keys, cb) {
 
 }
 
+function build_ad_url(id) {
+    let url = "https://www.facebook.com/ads/archive/render_ad/?id=" + id;
+    url += "&access_token=" + $('#APIToken')[0].value;
+    return url;
+}
+
 function GetAdList(ads) {
     let tableTemplate = `
-    <table>
+    <table style="width:100%">
         <thead>
         <tr>
+           <th> View Add </th>
            <th> Link Details </th>
            <th> Body </th>
            <th> Impressions  </th>
@@ -88,22 +95,27 @@ function GetAdList(ads) {
     let data = [];
     ads.forEach(function (ad, idx) {
         let row = [];
-        let linkDetails = "";
-        if (ad.ad_creative_link_title !== "") {
-            linkDetails +="<h5>Title</h5>";
-            linkDetails += "<p>" + ad.ad_creative_link_title + "</p>";
-        }
-        if (ad.ad_creative_link_caption !== "") {
-            linkDetails += "<h5>Caption</h5>";
-            linkDetails += "<p>" + ad.ad_creative_link_caption + "</p>";
-        }
+        let view_button = "<button type=\"button\" class=\"btn btn-primary\" id=\""
+        view_button += ad.id + "\" onclick=\"window.open(build_ad_url('" + ad.id + "'), 'ad_disaply')\">View This Ad</button>"
+        let view_frame = "<iframe src='" + build_ad_url(ad.id) + "'> </iframe>"
+        let linkDetails = "<p>" + ad.page_name + "</p>";
+        ad.ad_creative_link_titles.forEach((content, i) => {
+            linkDetails += "<p>" + content + "</p>";
+        });
+        ad.ad_creative_link_captions.forEach((content, i) => {
+            linkDetails += "<p>" + content + "</p>";
+        });
+        ad.ad_creative_link_descriptions.forEach((content, i) => {
+            linkDetails += "<p>" + content + "</p>";
+        });
+        let body = "";
+        ad.ad_creative_bodies.forEach((content, i) => {
+            body += "<p>" + content + "</p>";
+        });
 
-        if (ad.ad_creative_link_description !== "") {
-            linkDetails += "<h5>Description</h5>";
-            linkDetails += "<p>" + ad.ad_creative_link_description + "</p>";
-        }
+        row.push(view_button);
         row.push(linkDetails);
-        row.push(ad.ad_creative_body);
+        row.push(body);
         row.push(Number(ad.guestimateImpressions).toLocaleString('en', {maximumSignificantDigits: 2}));
         row.push("£" + Number(ad.guestimateSpendGBP).toLocaleString('en', {maximumSignificantDigits: 2}));
         let runTime = "<h5>Start</h5>"
@@ -120,7 +132,8 @@ function GetAdList(ads) {
 
     table.DataTable({
         data: data,
-        order: [[2, "desc"]]
+        order: [[2, "desc"]],
+        pageLength: 500
     });
 
     return table;

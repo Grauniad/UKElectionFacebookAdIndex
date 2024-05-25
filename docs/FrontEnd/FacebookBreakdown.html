@@ -38,10 +38,16 @@
                             <option selected value="Funder">Funder</option>
                         </select>
                     </div>
+                    <div class="form-group col-3">
+                        <h4>
+                            <label for="GroupBySelector"> API Token </label>
+                        </h4>
+                        <input type="text"  id="APIToken" />
+                    </div>
                 </div>
             </form>
             <div class="row">
-                <h6> Report Generated Thursday 12th December 2019, 08:30 </h6>
+                <h6> Report Generated Wednesday 22nd May 2024, 13:30 </h6>
             </div>
             <div class="row">
                 <div class="col-12">
@@ -94,8 +100,8 @@
                 return $('#DataSetSelector').val();
             }
             function GetSummaryUrl() {
-                //return "data/" + GetDataSet() + "/Summary.json";
-                return "https://raw.githubusercontent.com/LAHumphreys/UKElectionFacebookAdIndex/master/docs/FrontEnd/data/"  + GetDataSet() + "/Summary.json";
+                return "data/" + GetDataSet() + "/Summary.json";
+                //return "https://raw.githubusercontent.com/LAHumphreys/UKElectionFacebookAdIndex/master/docs/FrontEnd/data/"  + GetDataSet() + "/Summary.json";
             }
             $(document).ready( function () {
                 function ResetData() {
@@ -106,7 +112,7 @@
                     $.ajax({
                         url: GetSummaryUrl()
                     }).done(function (data) {
-                        LoadFilterTable(selectionTable, JSON.parse(data).summary);
+                        LoadFilterTable(selectionTable, data.summary);
                         $('#SearchButton').click(function () {
                             let cons = [];
                             $('#selectionTable input:checked').each(function (i, checkbox) {
