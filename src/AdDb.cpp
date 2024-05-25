@@ -121,7 +121,7 @@ AdDb::FacebookAdList AdDb::GetIssue(const std::string &name) const {
     return Get(*issues, name);
 }
 
-void AdDb::ForEachAdByConstituency(const AdDb::ForEachFacebookAd &cb) const {
+void AdDb::ForEachAdByConstituency(const AdDb::ForEachGroupedFacebookAd &cb) const {
     bool continueScan = true;
     const auto& cons = config->consituencies->items;
     for (auto it = cons.begin(); continueScan && it != cons.end(); ++it) {
@@ -213,4 +213,16 @@ AdDb::AdDb(const std::string &cfg, const AdDb::Serialization &data, const AdDb::
     } else {
         throw InvalidSerializationError{};
     }
+}
+
+void AdDb::ForEachAd(const AdDb::ForEachFacebookAd& cb) const {
+    store->ForEach([&] (const StoredFacebookAd& ad) -> FacebookAdStore::ScanOp {
+        switch(cb(ad.ItemRef())) {
+            case DbScanOp::CONTINUE:
+                return FacebookAdStore::ScanOp::CONTINUE;
+            case DbScanOp::STOP:
+                return FacebookAdStore::ScanOp::STOP;
+        }
+        return FacebookAdStore::ScanOp::STOP;
+    });
 }

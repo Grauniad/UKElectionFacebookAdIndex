@@ -8,6 +8,8 @@ namespace ReportJSON {
         NewStringField(funding_entity);
         NewUIntField(guestimateImpressions);
         NewUIntField(guestimateSpendGBP);
+        NewStringField(id);
+        NewStringField(page_name);
         NewStringField(ad_delivery_start_time);
         NewStringArrayField(ad_creative_bodies);
         NewStringArrayField(ad_creative_link_captions);
@@ -16,6 +18,8 @@ namespace ReportJSON {
 
     namespace data_fields {
         typedef SimpleParsedJSON<
+                id,
+                page_name,
                 ad_creative_link_captions,
                 ad_creative_bodies,
                 ad_creative_link_titles,

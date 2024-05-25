@@ -192,6 +192,30 @@ TEST_F(TDb, ForEachConstituencyKey_Stop) {
     ASSERT_EQ(cons[0], "Search#0");
 }
 
+TEST_F(TDb, ForEachAdd_Stop) {
+    std::vector<size_t> ad_ids;
+    theDb.ForEachAd([&] (const FacebookAd& ad) {
+        ad_ids.push_back(ad.id);
+        return AdDb::DbScanOp::STOP;
+    });
+    ASSERT_EQ(ad_ids.size(), 1);
+
+    ASSERT_EQ(ad_ids[0], ads[0].id);
+}
+
+TEST_F(TDb, ForEachAdd_All) {
+    std::vector<size_t> ad_ids;
+    theDb.ForEachAd([&] (const FacebookAd& ad) {
+        ad_ids.push_back(ad.id);
+        return AdDb::DbScanOp::CONTINUE;
+    });
+    ASSERT_EQ(ad_ids.size(), ads.size());
+    for (size_t i =0; i < ad_ids.size(); ++i) {
+        ASSERT_EQ(ad_ids[i], ads[i].id);
+    }
+
+}
+
 // Consituency Key already validates the loop logic,
 // just validate our glue code is setting it up with the right index...
 TEST_F(TDb, ForEachIssueKey) {
@@ -532,6 +556,7 @@ TEST(DbUtilsTest, ConReport_Ads) {
         ASSERT_EQ(fileAd.Get<ReportJSON::ad_creative_link_titles>(), ad.linkTitles);
         ASSERT_EQ(fileAd.Get<ReportJSON::ad_creative_link_captions>(), ad.linkCaptions );
         ASSERT_EQ(fileAd.Get<ReportJSON::ad_creative_bodies>(), ad.bodies);
+        ASSERT_EQ(fileAd.Get<ReportJSON::page_name>(), ad.pageName);
     }
 }
 

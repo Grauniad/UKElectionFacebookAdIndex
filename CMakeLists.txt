@@ -91,6 +91,10 @@ add_executable(processAds src/processAds.cpp)
 target_compile_features(processAds PRIVATE cxx_std_17)
 target_link_libraries(processAds PUBLIC AdParser Db)
 
+add_executable(processDiff src/processDiff.cpp)
+target_compile_features(processDiff PRIVATE cxx_std_17)
+target_link_libraries(processDiff PUBLIC AdParser Db)
+
 add_executable(generateTimeSeries src/generateTimeSeries.cpp)
 target_compile_features(generateTimeSeries PRIVATE cxx_std_17)
 target_link_libraries(generateTimeSeries PUBLIC AdParser Db)

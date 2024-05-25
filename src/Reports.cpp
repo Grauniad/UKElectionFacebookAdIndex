@@ -94,8 +94,12 @@ namespace {
             switch (action) {
                 case Action::UPDATED_AD:
                     adReport.ad = *finalIt;
-                    adReport.guestimateSpend = 0;
-                    adReport.guestimateImpressions = 0;
+                    adReport.guestimateSpend =
+                        MidPoint( (*finalIt)->spend, MidPointMode::TRUE_MID) -
+                        MidPoint( (*startIt)->spend, MidPointMode::TRUE_MID);
+                    adReport.guestimateImpressions =
+                        MidPoint( (*finalIt)->impressions, MidPointMode::TRUE_MID) -
+                        MidPoint( (*startIt)->impressions, MidPointMode::TRUE_MID);
                     ++startIt;
                     ++finalIt;
                     break;
@@ -140,7 +144,7 @@ std::unique_ptr<Report> Reports::DoIssueReport(
     return DoReport(theDb, source, getter, filter);
 }
 
-std::unique_ptr<Reports::Report> Reports::DoDiffReport(const AdDb &start, const AdDb &end) {
+std::unique_ptr<Reports::Report> Reports::DoConDiffReport(const AdDb &start, const AdDb &end) {
     auto report = std::make_unique<Report>();
 
     start.ForEachConsituency([&] (const std::string& name) -> AdDb::DbScanOp {
@@ -149,6 +153,22 @@ std::unique_ptr<Reports::Report> Reports::DoDiffReport(const AdDb &start, const 
         auto startAds = start.GetConstituency(name);
         auto finalAds = end.GetConstituency(name);
         con.ads = AdDiffs(startAds, finalAds, con.summary);
+
+        return AdDb::DbScanOp::CONTINUE;
+    });
+
+    return report;
+}
+
+std::unique_ptr<Reports::Report> Reports::DoIssuesDiffReport(const AdDb &start, const AdDb &end) {
+    auto report = std::make_unique<Report>();
+
+    start.ForEachIssue([&] (const std::string& name) -> AdDb::DbScanOp {
+        auto& issue = (*report)[name];
+        issue.summary.name = name;
+        auto startAds = start.GetIssue(name);
+        auto finalAds = end.GetIssue(name);
+        issue.ads = AdDiffs(startAds, finalAds, issue.summary);
 
         return AdDb::DbScanOp::CONTINUE;
     });

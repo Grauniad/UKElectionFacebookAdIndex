@@ -50,7 +50,8 @@ namespace Reports {
     std::unique_ptr<Report> DoConsituencyReport(const AdDb& theDb, const FilterFunc& filter = AllowAll);
 
     std::unique_ptr<Report> DoIssueReport(const AdDb& theDb, const FilterFunc& filter = AllowAll);
-    std::unique_ptr<Report> DoDiffReport(const AdDb& start, const AdDb& end);
+    std::unique_ptr<Report> DoConDiffReport(const AdDb& start, const AdDb& end);
+    std::unique_ptr<Report> DoIssuesDiffReport(const AdDb& start, const AdDb& end);
 
     enum class TimeSeriesMode {
         STANDARD,

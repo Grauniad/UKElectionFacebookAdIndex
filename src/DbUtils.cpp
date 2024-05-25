@@ -191,19 +191,23 @@ void DbUtils::WriteReport(Reports::Report& report, const std::string &basePath, 
             adsBuilder.Add("ad_delivery_start_time", ad.ad->deliveryStartTime.ISO8601Timestamp());
             adsBuilder.Add("ad_delivery_end_time", ad.ad->deliveryEndTime.ISO8601Timestamp());
             adsBuilder.Add("ad_creation_time", ad.ad->creationTime.ISO8601Timestamp());
+            std::stringstream id_str;
+            id_str << ad.ad->id;
             if (mode == WriteMode::REDACTED) {
                 const std::vector<std::string> redacted{REDACTED_TEXT};
                 adsBuilder.Add("ad_creative_link_descriptions", redacted);
                 adsBuilder.Add("ad_creative_link_titles", redacted);
                 adsBuilder.Add("ad_creative_link_captions", redacted);
                 adsBuilder.Add("ad_creative_bodies", redacted);
+                adsBuilder.Add("id", id_str.str());
             } else {
                 adsBuilder.Add("ad_creative_bodies", ad.ad->bodies);
                 adsBuilder.Add("ad_creative_link_descriptions",
                                 ad.ad->linkDescriptions);
                 adsBuilder.Add("ad_creative_link_titles", ad.ad->linkTitles);
-                adsBuilder.Add("ad_creative_link_captions", ad
-                .ad->linkCaptions);
+                adsBuilder.Add("ad_creative_link_captions", ad.ad->linkCaptions);
+                adsBuilder.Add("id", id_str.str());
+                adsBuilder.Add("page_name", ad.ad->pageName);
             }
             adsBuilder.Add("guestimateImpressions", ad.guestimateImpressions);
             adsBuilder.Add("guestimateSpendGBP", ad.guestimateSpend);

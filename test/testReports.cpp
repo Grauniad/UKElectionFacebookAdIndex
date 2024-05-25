@@ -297,7 +297,7 @@ protected:
     }
 
     std::unique_ptr<Reports::Report> DoDiff() {
-        return Reports::DoDiffReport(startDb, endDb);
+        return Reports::DoConDiffReport(startDb, endDb);
     }
 
     struct AdCheck {
@@ -371,6 +371,40 @@ TEST_F( DeltaReportTest, NoDiff) {
     auto delta = NewFlatDelta({100, 200}, 0, 0);
     auto key = NewAddDiff(CATEGORY::SEARCH_0, delta);
     checks[0].ads.push_back({key, 0, 0});
+
+    auto ptr = DoDiff();
+    auto report = *ptr;
+
+    ASSERT_NO_FATAL_FAILURE(
+            DoChecks(checks, report)
+    );
+}
+
+TEST_F( DeltaReportTest, MoreImpressions) {
+    auto checks = EmptyChecks();
+
+    // 1 add, same in both
+    auto delta = NewFlatDelta({100, 200}, 0, 150);
+    auto key = NewAddDiff(CATEGORY::SEARCH_0, delta);
+    checks[0].ads.push_back({key, 0, 150});
+    checks[0].summary.estImpressions = 150;
+
+    auto ptr = DoDiff();
+    auto report = *ptr;
+
+    ASSERT_NO_FATAL_FAILURE(
+            DoChecks(checks, report)
+    );
+}
+
+TEST_F( DeltaReportTest, MoreSpend) {
+    auto checks = EmptyChecks();
+
+    // 1 add, same in both
+    auto delta = NewFlatDelta({100, 200}, 50, 0);
+    auto key = NewAddDiff(CATEGORY::SEARCH_0, delta);
+    checks[0].ads.push_back({key, 50, 0});
+    checks[0].summary.estSpend = 50;
 
     auto ptr = DoDiff();
     auto report = *ptr;
