@@ -1,0 +1,18 @@
+{
+    "upload": {
+        "region":  "eu-west-2",
+        "name": "hello_world"
+    },
+    "import_folders": [{
+        "src": "common_env/mypy_boto3_dynamodb"
+    }],
+    "src_files": [{
+        "src":  "common_env/typing_extensions.py"
+    }, {
+        "src":  "../auth_common.py"
+    }, {
+        "src":  "../lambdas/test_data_provider.py",
+        "name": "lambda_function.py"
+    }]
+
+}

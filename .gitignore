@@ -50,3 +50,10 @@ utils/PlaceData/IPN_GB_2019.csv
 js/node_modules
 db
 js/resume.cfg
+
+#
+# Temporary hacky AWS deploy artifacts
+#
+aws/AWS/__pycache__/
+aws/AWS/builds/working/
+aws/AWS/builds/build_output.zip

@@ -20,6 +20,16 @@ namespace {
             return false;
         }
     }
+    std::string find_non_empty(const std::vector<std::string> to_search) {
+        const auto it =
+                std::find_if_not(to_search.begin(), to_search.end(),
+                                 [&] (const std::string& item) {return item.empty();});
+        if (it != to_search.end()) {
+            return *it;
+        } else {
+            return "";
+        }
+    }
 }
 bool DbUtils::Search(const std::string& toSearch, const std::string& key) {
     size_t pos = 0;
@@ -220,6 +230,48 @@ void DbUtils::WriteReport(Reports::Report& report, const std::string &basePath, 
     summaryBuilder.EndArray();
     summaryFile << summaryBuilder.GetAndClear() << std::endl;
     summaryFile.close();
+}
+
+
+void DbUtils::ExportAdsToAWSFormat(AdDb &db, const std::string &fname) {
+    std::fstream export_file(fname, std::ios_base::out);
+    SimpleJSONPrettyBuilder aws_builder;
+    aws_builder.StartArray("ads");
+    db.ForEachAd([&] (const FacebookAd& ad) {
+        aws_builder.StartAnonymousObject();
+        aws_builder.Add("page_name", ad.pageName);
+        aws_builder.Add("funder", ad.fundingEntity);
+        aws_builder.Add("start_date", ad.deliveryStartTime.Timestamp().substr(0,8));
+        aws_builder.Add("end_date", ad.deliveryEndTime.Timestamp().substr(0, 8));
+        aws_builder.Add("id", ad.id);
+        if (ad.spend.lower_bound == 0) {
+            aws_builder.Add("est_spend", 1);
+        } else {
+            const size_t mid = (ad.spend.upper_bound + ad.spend.lower_bound) / 2.0;
+            aws_builder.Add("est_spend", mid);
+        }
+        if (ad.impressions.lower_bound == 0) {
+            aws_builder.Add("est_impressions", 1);
+        } else {
+            const size_t mid = (ad.impressions.upper_bound + ad.impressions.lower_bound) / 2.0;
+            aws_builder.Add("est_impressions", mid);
+        }
+        aws_builder.Add("body", find_non_empty(ad.bodies));
+
+        std::string title = find_non_empty(ad.linkDescriptions);
+        if (title.empty()) {
+            title = find_non_empty(ad.linkCaptions);
+        }
+        if (title.empty()) {
+            title = find_non_empty(ad.linkTitles);
+        }
+        aws_builder.Add("title", title);
+        aws_builder.EndObject();
+        return AdDb::DbScanOp::CONTINUE;
+    });
+    aws_builder.EndArray();
+    export_file << aws_builder.GetAndClear() << std::endl;
+    export_file.close();
 }
 
 void DbUtils::WriteDbToDisk(AdDb &db, const std::string &fname) {

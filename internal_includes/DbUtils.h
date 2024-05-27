@@ -35,6 +35,7 @@ namespace DbUtils {
     };
     void WriteReport(Reports::Report& report, const std::string& basePath, WriteMode = WriteMode::FULL);
     void WriteTimeSeries(Reports::TimeSeriesReport & report, const std::vector<std::string> timeStamps, const std::string& path);
+    void ExportAdsToAWSFormat(AdDb &db, const std::string &fname);
 
     bool Search(const std::string& toSearch, const std::string& key);
 }

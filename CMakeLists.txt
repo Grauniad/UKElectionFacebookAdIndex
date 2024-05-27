@@ -91,6 +91,10 @@ add_executable(processAds src/processAds.cpp)
 target_compile_features(processAds PRIVATE cxx_std_17)
 target_link_libraries(processAds PUBLIC AdParser Db)
 
+add_executable(generateAWSExport src/generateAWSExport.cpp)
+target_compile_features(generateAWSExport PRIVATE cxx_std_17)
+target_link_libraries(generateAWSExport PUBLIC AdParser Db)
+
 add_executable(processDiff src/processDiff.cpp)
 target_compile_features(processDiff PRIVATE cxx_std_17)
 target_link_libraries(processDiff PUBLIC AdParser Db)
@@ -116,7 +120,10 @@ find_package(GTest REQUIRED)
 add_executable(ad_parser test/ad_parser.cpp internal_includes/test_utils.h)
 add_executable(index test/index.cpp internal_includes/test_utils.h)
 add_executable(store test/store.cpp internal_includes/test_utils.h)
-add_executable(adDb test/dbTests.cpp internal_includes/test_utils.h internal_includes/SummmaryJSON.h internal_includes/ReportAdsJSON.h)
+add_executable(adDb test/dbTests.cpp internal_includes/test_utils.h
+                                     internal_includes/SummmaryJSON.h
+                                     internal_includes/ReportAdsJSON.h
+                                     internal_includes/AWSExport.h)
 add_executable(configPurify test/testPurify.cpp internal_includes/test_utils.h internal_includes/SummmaryJSON.h internal_includes/ReportAdsJSON.h)
 add_executable(testReports test/testReports.cpp internal_includes/test_utils.h)
 

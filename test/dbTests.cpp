@@ -5,6 +5,7 @@
 #include "../internal_includes/DbUtils.h"
 #include "../internal_includes/SummmaryJSON.h"
 #include "../internal_includes/ReportAdsJSON.h"
+#include "../internal_includes/AWSExport.h"
 #include "../internal_includes/ConfigParser.h"
 #include <gtest/gtest.h>
 #include <AdDb.h>
@@ -53,6 +54,10 @@ public:
         ad.linkCaptions = {"Caption#0"};
         ad.linkDescriptions = {"Description#0", "Description#1"};
         ad.bodies = { "Body#0", "Body#1" };
+        ad.spend.lower_bound = 0;
+        ad.spend.upper_bound = 100;
+        ad.impressions.lower_bound = 0;
+        ad.impressions.upper_bound = 200;
 
         FacebookAd& ad1 = ads.emplace_back();
         ad1.id = 1;
@@ -64,6 +69,10 @@ public:
         ad1.linkCaptions = {"Caption#1", "Caption#0"};
         ad1.linkDescriptions = {"Description#1"};
         ad1.bodies = {"Body#1"};
+        ad1.spend.lower_bound = 100;
+        ad1.spend.upper_bound = 200;
+        ad1.impressions.lower_bound = 200;
+        ad1.impressions.upper_bound = 300;
 
         FacebookAd& ad2 = ads.emplace_back();
         ad2.id = 2;
@@ -76,6 +85,10 @@ public:
         ad2.linkCaptions = {"Caption#2"};
         ad2.linkDescriptions = {"Description#2"};
         ad2.bodies = {"Brexit!"};
+        ad2.spend.lower_bound = 200;
+        ad2.spend.upper_bound = 300;
+        ad2.impressions.lower_bound = 400;
+        ad2.impressions.upper_bound = 500;
     }
 protected:
     void SetUp() {
@@ -508,6 +521,40 @@ TEST(DbUtilsTest, ConReport_Summary) {
     ASSERT_EQ(woking->Get<SummaryJSON::guestimateImpressions>(), reportWoking.summary.estImpressions);
     ASSERT_TRUE(woking->Supplied<SummaryJSON::guestimateSpendGBP>());
     ASSERT_EQ(woking->Get<SummaryJSON::guestimateSpendGBP>(), reportWoking.summary.estSpend);
+}
+
+TEST_F(TDb, AWSExport) {
+
+    DbUtils::ExportAdsToAWSFormat(theDb, "aws_export.json");
+
+    std::ifstream summaryOutput("./aws_export.json");
+    ASSERT_FALSE(summaryOutput.fail());
+
+    AWSExport::JSON awsParser;
+    std::string rawSummary((std::istreambuf_iterator<char>(summaryOutput)), std::istreambuf_iterator<char>());
+    std::string error;
+    ASSERT_TRUE(awsParser.Parse(rawSummary.c_str(), error)) << error;
+
+    ASSERT_EQ(awsParser.Get<AWSExport::ads>().size(), ads.size());
+
+    for (size_t i = 0; i < awsParser.Get<AWSExport::ads>().size(); ++i) {
+        auto& fileAd = *awsParser.Get<AWSExport::ads>()[i];
+        auto& ad = ads[i];
+        ASSERT_EQ(fileAd.Get<AWSExport::Ad::funder>(), ad.fundingEntity);
+        ASSERT_EQ(fileAd.Get<AWSExport::Ad::start_date>(), ad.deliveryStartTime.Timestamp().substr(0,8));
+        ASSERT_EQ(fileAd.Get<AWSExport::Ad::end_date>(), ad.deliveryEndTime.Timestamp().substr(0,8));
+        ASSERT_EQ(fileAd.Get<AWSExport::Ad::page_name>(), ad.pageName);
+        ASSERT_EQ(fileAd.Get<AWSExport::Ad::id>(), ad.id);
+        if (i == 0) {
+            ASSERT_EQ(fileAd.Get<AWSExport::Ad::est_spend>(), 1);
+            ASSERT_EQ(fileAd.Get<AWSExport::Ad::est_impressions>(), 1);
+        } else {
+            ASSERT_EQ(fileAd.Get<AWSExport::Ad::est_spend>(), i*100 + 50);
+            ASSERT_EQ(fileAd.Get<AWSExport::Ad::est_impressions>(), i*200 + 50);
+        }
+        ASSERT_EQ(fileAd.Get<AWSExport::Ad::body>(), ad.bodies[0]);
+        ASSERT_EQ(fileAd.Get<AWSExport::Ad::title>(), ad.linkDescriptions[0]);
+    }
 }
 
 TEST(DbUtilsTest, ConReport_NoAds) {
