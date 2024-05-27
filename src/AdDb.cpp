@@ -5,6 +5,7 @@
 #include <iostream>
 #include "../internal_includes/ConfigParser.h"
 #include "../internal_includes/DbJSON.h"
+#include "../internal_includes/IndexJSON.h"
 
 namespace {
 
@@ -96,6 +97,9 @@ void AdDb::Store(std::unique_ptr<FacebookAd> ad) {
         const auto& storedAd = store->Store(std::move(ad));
         consituencies->Update(storedAd);
         issues->Update(storedAd);
+        if (!storedAd.IsNull()) {
+            funders[storedAd.ItemRef().fundingEntity].insert(storedAd.Key());
+        }
     }
 
 }
@@ -119,6 +123,19 @@ AdDb::FacebookAdList AdDb::GetConstituency(const std::string &name) const {
 
 AdDb::FacebookAdList AdDb::GetIssue(const std::string &name) const {
     return Get(*issues, name);
+}
+AdDb::FacebookAdList AdDb::GetFunder(const std::string& name) const {
+    FacebookAdList results;
+    const auto funder_it = funders.find(name);
+    if (funder_it != funders.end()) {
+        for (const auto& ad_key: funder_it->second) {
+            const auto& storedAd = store->Get(ad_key);
+            if (!storedAd.IsNull()) {
+                results.emplace_back(storedAd.NewSharedRef());
+            }
+        }
+    }
+    return results;
 }
 
 void AdDb::ForEachAdByConstituency(const AdDb::ForEachGroupedFacebookAd &cb) const {
@@ -169,6 +186,7 @@ AdDb::Serialization AdDb::Serialize() const {
     encoder.Get<DbJSON::store>() = std::move(store->Serialize().data);
     encoder.Get<DbJSON::issues>() = issues->Serialize();
     encoder.Get<DbJSON::cons>() = consituencies->Serialize();
+    encoder.Get<DbJSON::funders>() = SerializeFunders();
 
     Serialization serialization;
     serialization.json = encoder.GetJSONString();
@@ -195,6 +213,7 @@ AdDb::AdDb(const std::string &cfg, const AdDb::Serialization &data, const AdDb::
             store->ForEach([&] (const StoredFacebookAd& ad) -> auto {
                 issues->Update(ad);
                 consituencies->Update(ad);
+                funders[ad.ItemRef().fundingEntity].insert(ad.Key());
                 return FacebookAdStore::ScanOp::CONTINUE;
             });
         } else {
@@ -207,6 +226,7 @@ AdDb::AdDb(const std::string &cfg, const AdDb::Serialization &data, const AdDb::
                     config->consituencies,
                     facebookKey,
                     decoder.Get<DbJSON::cons>());
+            DeserializeFunders(decoder.Get<DbJSON::funders>());
         }
 
 
@@ -225,4 +245,53 @@ void AdDb::ForEachAd(const AdDb::ForEachFacebookAd& cb) const {
         }
         return FacebookAdStore::ScanOp::STOP;
     });
+}
+
+void AdDb::ForEachFunder(const AdDb::ForEachItemDefn& cb) const {
+    for (const auto& [funder, data_set]: funders) {
+        switch(cb(funder)) {
+            case DbScanOp::CONTINUE:
+                break;
+            case DbScanOp::STOP:
+                return;
+        }
+    }
+}
+
+std::string AdDb::SerializeFunders() const {
+    thread_local IndexJSON::JSON encoder;
+    encoder.Clear();
+
+    encoder.Get<IndexJSON::items>().resize(funders.size());
+    auto it = funders.begin();
+    for (size_t i = 0; i < funders.size() && it != funders.end(); ++i) {
+        auto& next = *encoder.Get<IndexJSON::items>()[i];
+        next.Get<IndexJSON::name>() = it->first;
+        next.Get<IndexJSON::keys>().reserve(it->second.size());
+        for (const auto& key: it->second) {
+            next.Get<IndexJSON::keys>().push_back(key);
+        }
+        ++it;
+    }
+
+    return encoder.GetJSONString();
+}
+
+void AdDb::DeserializeFunders(const std::string& data) {
+    thread_local IndexJSON::JSON decoder;
+    decoder.Clear();
+    std::string error;
+    if (decoder.Parse(data.c_str(), error)) {
+        for (size_t i = 0; i < decoder.Get<IndexJSON::items>().size(); ++i) {
+            auto& item = *decoder.Get<IndexJSON::items>()[i];
+            auto& keys = funders[item.Get<IndexJSON::name>()];
+            for (const auto& key: item.Get<IndexJSON::keys>()) {
+                keys.insert(key);
+            }
+        }
+    } else {
+        // TODO
+        abort();
+    }
+
 }

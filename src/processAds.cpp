@@ -18,6 +18,8 @@ namespace {
         std::cout << "   --ignoreBlankFunders:  Don't report on ads with no declared funder" << std::endl;
         std::cout << "   --funder [funder]   :  Only process from the specified funder ('--' for blank funder)" << std::endl;
         std::cout << "   --skipParse         :  Don't load the ads directory" << std::endl;
+        std::cout << "   --reindex           :  Discard existing indexes" <<
+        std::endl;
     }
 }
 
@@ -36,6 +38,7 @@ int main(int argc, const char* argv[]) {
     bool ignoreBlankFunder = false;
     bool skipParse = false;
     bool funderFilter = false;
+    AdDb::DeSerialMode indexMode  = AdDb::DeSerialMode::NO_REINDEX;
 
     for (size_t i = 1; i < startIdx; ++i) {
         const std::string arg = argv[i];
@@ -45,6 +48,9 @@ int main(int argc, const char* argv[]) {
         } else if (arg == "--skipParse") {
                 std::cout << "--skipParse: will not load ads" << std::endl;
                 skipParse = true;
+        } else if (arg == "--reindex") {
+            std::cout << "--reindex: will rebuild our indexes" << std::endl;
+            indexMode  = AdDb::DeSerialMode::FORCE_REINDEX;
         } else if (arg == "--loadDb") {
             ++i;
             startDb = argv[i];
@@ -84,7 +90,7 @@ int main(int argc, const char* argv[]) {
         dataDir = "";
     }
 
-    auto db = DbUtils::LoadDb(cfg, dataDir, startDb);
+    auto db = DbUtils::LoadDb(cfg, dataDir, startDb, indexMode);
 
     const auto AdFilter = [&] (const FacebookAd& ad) -> bool {
         bool include = true;
@@ -106,6 +112,9 @@ int main(int argc, const char* argv[]) {
 
     report = Reports::DoIssueReport(*db, AdFilter);
     DbUtils::WriteReport(*report, reportDir + "/Issues", writeMode);
+
+    report = Reports::DoFundersReport(*db, AdFilter);
+    DbUtils::WriteReport(*report, reportDir + "/Funders", writeMode);
 
     if (resultDb != "") {
         std::cout << "Securing database to disk... ";

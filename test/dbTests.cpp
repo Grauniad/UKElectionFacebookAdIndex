@@ -194,6 +194,31 @@ TEST_F(TDb, ForEachConstituencyKey) {
     ASSERT_EQ(cons[2], "Search#2");
 }
 
+TEST_F(TDb, ForEachFunder) {
+    std::vector<std::string> funders;
+    theDb.ForEachFunder([&] (const std::string& name) -> auto {
+        funders.push_back(name);
+        return AdDb::DbScanOp::CONTINUE;
+    });
+    ASSERT_EQ(funders.size(), 2);
+
+    ASSERT_EQ(funders[0], "Entity#0");
+    ASSERT_EQ(funders[1], "Entity#1");
+}
+
+TEST_F(TDb, AdsForFunder) {
+    auto ads_for_entity_0 = theDb.GetFunder("Entity#0");
+
+    ASSERT_EQ(ads_for_entity_0.size(), 1);
+    AssertEq(*ads_for_entity_0[0], ads[0]);
+
+    auto ads_for_entity_1 = theDb.GetFunder("Entity#1");
+
+    ASSERT_EQ(ads_for_entity_1.size(), 2);
+    AssertEq(*ads_for_entity_1[0], ads[1]);
+    AssertEq(*ads_for_entity_1[1], ads[2]);
+}
+
 TEST_F(TDb, ForEachConstituencyKey_Stop) {
     std::vector<std::string> cons;
     theDb.ForEachConsituency([&] (const std::string& name) -> auto {
@@ -294,6 +319,23 @@ TEST_F(TDb, Serialize_DeSerialize_Cons) {
     AssertEq(*matches[0], ads[0]);
     AssertEq(*matches[1], ads[1]);
     AssertEq(*matches[2], ads[2]);
+}
+
+TEST_F(TDb, Serialize_DeSerialize_Funders) {
+    auto serialization = theDb.Serialize();
+
+    AdDb dbCopy(dbConfig, serialization);
+
+    auto ads_for_entity_0 = dbCopy.GetFunder("Entity#0");
+
+    ASSERT_EQ(ads_for_entity_0.size(), 1);
+    AssertEq(*ads_for_entity_0[0], ads[0]);
+
+    auto ads_for_entity_1 = dbCopy.GetFunder("Entity#1");
+
+    ASSERT_EQ(ads_for_entity_1.size(), 2);
+    AssertEq(*ads_for_entity_1[0], ads[1]);
+    AssertEq(*ads_for_entity_1[1], ads[2]);
 }
 
 TEST_F(TDb, Serialize_DeSerialize_Issues) {

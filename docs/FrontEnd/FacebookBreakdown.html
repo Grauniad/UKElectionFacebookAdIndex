@@ -106,9 +106,7 @@
             $(document).ready( function () {
                 function ResetData() {
                     let selectionTable = $('#selectionTable');
-                    let resultsTable = $('#resultsTable');
                     ClearTable(selectionTable);
-                    ClearTable(resultsTable);
                     $.ajax({
                         url: GetSummaryUrl()
                     }).done(function (data) {

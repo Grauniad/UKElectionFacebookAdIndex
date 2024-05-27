@@ -10,7 +10,8 @@ namespace DbJSON {
     NewStringField(store);
     NewStringField(cons);
     NewStringField(issues);
-    using JSON = SimpleParsedJSON<store, cons, issues>;
+    NewStringField(funders);
+    using JSON = SimpleParsedJSON<store, cons, issues, funders>;
 }
 
 #endif //ELECTIONDATAANAL_DBJSON_H

@@ -1,14 +1,17 @@
 <!doctype html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en" class="dark" data-bs-theme="dark">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bootstrap demo</title>
+    <title>UK Election Ads</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" ></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+
+    <!-- Data tables -->
+    <link href="https://cdn.datatables.net/v/dt/dt-2.0.7/datatables.min.css" rel="stylesheet">
   </head>
   <body>
 
@@ -41,6 +44,7 @@
               <li><a target="#" class="dropdown-item" href="https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/dynamodb.html#dynamodb">AWS Boto3: DynamoDb</a></li>
               <li><hr class="dropdown-divider"></li>
               <li><a target="#" class="dropdown-item" href="https://getbootstrap.com/docs/5.3/getting-started/introduction/">Bootstrap Layout</a></li>
+              <li><a target="#" class="dropdown-item" href="https://datatables.net/manual/data/">Data Tables</a></li>
             </ul>
           </li>
           <li class="nav-item dropdown">
@@ -60,30 +64,115 @@
     </div>
   </nav>
 
-    <div class="container text-center">
-      <div class="row">
+
+    <div class="grid container text-center">
+      <div class="row mt-3">
         <div class="col">
-          Column
+          <label for="dataSetSelector" class="form-label">Data Set</label>
+          <select id="dataSetSelector" class="form-select">
+            <option>Funder By (raw)</option>
+          </select>
         </div>
         <div class="col">
-          Column
+          <label for="reportName" class="form-label">Report</label>
+          <select id="reportName" class="form-select">
+            <option>Latest (2024-05-26)</option>
+          </select>
         </div>
         <div class="col">
-          Column
+          <label for="baselineName" class="form-label">Baseline</label>
+          <select id="baselineName" class="form-select" disabled>
+            <option>Pre Election</option>
+          </select>
         </div>
       </div>
-      <div class="row">
+      <div class="row mt-3">
         <div class="col">
-          Column
+          <button id="fetch_summary" style="width:100%" type="submit" class="btn btn-secondary">Fetch Report</button>
         </div>
-        <div class="col">
-          Column
+      </div>
+      <div class="row mt-4">
+        <div class="col-12">
+          <h4> Category Filter</h4>
+          <table id="selectionTable">
+            <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Category</th>
+              <th scope="col">Ads</th>
+              <th scope="col">Guestimated Impressions</th>
+              <th scope="col">Guestimated Spend</th>
+            </tr>
+            </thead>
+          </table>
         </div>
+      </div>
+      <div class="row mt-3">
         <div class="col">
-          Column
+          <button id="fetch_ads" style="width:100%" type="submit" class="btn btn-primary">Fetch Ads</button>
         </div>
       </div>
     </div>
+
+
+  <div class="grid container text-center mt-5">
+    <div class="row mt-3">
+      <div class="col">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Card title</h5>
+            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+            <a href="#" class="btn btn-primary">Go somewhere</a>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card">
+          <iframe loading="lazy" src="" style="height:500px;width:500px"> </iframe>
+          -
+          <div class="card-body">
+            <h5 class="card-title">Card title</h5>
+            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+            <a href="#" class="btn btn-primary">Go somewhere</a>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card">
+          <iframe loading="lazy" src="" style="height:600px;width:500px"> </iframe>
+          -
+          <div class="card-body">
+            <h5 class="card-title">Card title</h5>
+            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+            <a href="#" class="btn btn-primary">Go somewhere</a>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card">
+          <iframe loading="lazy" src="" style="height:500px;width:500px"> </iframe>
+          -
+          <div class="card-body">
+            <h5 class="card-title">Card title</h5>
+            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+            <a href="#" class="btn btn-primary">Go somewhere</a>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card">
+          <iframe loading="lazy" src="" style="height:500px;width:500px"> </iframe>
+          -
+          <div class="card-body">
+            <h5 class="card-title">Card title</h5>
+            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+            <a href="#" class="btn btn-primary">Go somewhere</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
     <div id="login_modal" class="modal" tabindex="-1">
       <div class="modal-dialog">
@@ -113,10 +202,34 @@
       </div>
     </div>
     <script src="aws_front_end/login_auth.js" ></script>
+    <script src="aws_front_end/ad_data.js" ></script>
+
     <script>
       $(document).ready( function () {
         const model = new AWSFrontEnd();
         model.show_login_prompt_if_required();
+      } );
+    </script>
+
+    <script src="https://cdn.datatables.net/v/dt/dt-2.0.7/datatables.min.js"></script>
+
+    <script>
+      function GetSummaryUrl() {
+        return "data/" + "Funders" + "/Summary.json";
+      }
+      $(document).ready( function () {
+        function ResetData() {
+          let selectionTable = $('#selectionTable');
+          ClearTable(selectionTable);
+          $.ajax({
+            url: GetSummaryUrl()
+          }).done(function (data) {
+            LoadFilterTable(selectionTable, data.summary);
+          }).fail(function () {
+            console.log("Failed to load summary data!");
+          });
+        }
+        ResetData();
       } );
     </script>
   </body>

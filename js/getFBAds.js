@@ -159,7 +159,7 @@ function start_next_url(config) {
         facebookurl+="&ad_reached_countries=['GB']"
         facebookurl+="&search_terms=''"
         facebookurl+="&publisher_platforms=" + config.platforms_to_get[0]
-        facebookurl+="&ad_delivery_date_min=2024-05-22"
+        facebookurl+="&ad_delivery_date_min=2024-05-24"
         facebookurl+="&ad_type=POLITICAL_AND_ISSUE_ADS"
         facebookurl+="&ad_active_status=ALL"
         facebookurl+="&fields=page_name,ad_snapshot_url,bylines,ad_delivery_start_time,ad_delivery_stop_time,ad_creative_link_descriptions,ad_creative_link_titles,ad_creative_link_captions,ad_creative_bodies,ad_creation_time,spend,impressions"

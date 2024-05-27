@@ -144,6 +144,19 @@ std::unique_ptr<Report> Reports::DoIssueReport(
     return DoReport(theDb, source, getter, filter);
 }
 
+std::unique_ptr<Report> Reports::DoFundersReport(
+        const AdDb &theDb,
+        const FilterFunc& filter)
+{
+    auto source = [&] (const auto& processor) -> void {
+        theDb.ForEachFunder(processor);
+    };
+    auto getter = [&] (const std::string& name) -> auto {
+        return theDb.GetFunder(name);
+    };
+    return DoReport(theDb, source, getter, filter);
+}
+
 std::unique_ptr<Reports::Report> Reports::DoConDiffReport(const AdDb &start, const AdDb &end) {
     auto report = std::make_unique<Report>();
 

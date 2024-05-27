@@ -9,6 +9,7 @@
 #include <FacebookAdKey.h>
 #include <Index.h>
 #include <memory>
+#include <set>
 #include <functional>
 
 class AdDb {
@@ -44,11 +45,13 @@ public:
 
     [[nodiscard]] FacebookAdList GetConstituency(const std::string& name) const;
     [[nodiscard]] FacebookAdList GetIssue(const std::string& name) const;
+    [[nodiscard]] FacebookAdList GetFunder(const std::string& name) const;
 
     void ForEachAdByConstituency(const ForEachGroupedFacebookAd& cb) const;
     void ForEachAd(const ForEachFacebookAd& cb) const;
     void ForEachConsituency(const ForEachItemDefn& cb) const;
     void ForEachIssue(const ForEachItemDefn& cb) const;
+    void ForEachFunder(const ForEachItemDefn& cb) const;
 
     Serialization Serialize() const;
 
@@ -72,11 +75,14 @@ public:
         nstimestamp::Time endTimeCutOff;
     };
 private:
-    FacebookAdList Get(const FacebookAdIndex& idx, const std::string& key) const;
+    [[nodiscard]] std::string SerializeFunders() const;
+    void DeserializeFunders(const std::string& data);
+    [[nodiscard]] FacebookAdList Get(const FacebookAdIndex& idx, const std::string& key) const;
     void ForEach(IndexConfig& idx, const AdDb::ForEachItemDefn &cb) const;
     std::unique_ptr<FacebookAdStore> store;
     std::unique_ptr<FacebookAdIndex> consituencies;
     std::unique_ptr<FacebookAdIndex> issues;
+    std::map<std::string, std::set<StoredFacebookAd::KeyType>> funders;
 
     std::unique_ptr<DbConfig> config;
 };

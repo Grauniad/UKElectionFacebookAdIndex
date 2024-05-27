@@ -25,7 +25,10 @@ namespace DbUtils {
     void WriteDbToDisk(AdDb& db, const std::string& fname);
 
     std::unique_ptr<AdDb> LoadDb(const std::string& cfgFile, const std::string& dataDir);
-    std::unique_ptr<AdDb> LoadDb(const std::string& cfgFile, const std::string& dataDir, const std::string& dbStartState);
+    std::unique_ptr<AdDb> LoadDb(const std::string& cfgFile,
+                                 const std::string& dataDir,
+                                 const std::string& dbStartState,
+                                 AdDb::DeSerialMode = AdDb::DeSerialMode::NO_REINDEX);
 
     constexpr const char * const REDACTED_TEXT =
             "\"Creative Fields\" redacted due to Facebook Terms & Conditions. To review ad details please acquire a FACEBOOK API Token and re-run the report locally";
